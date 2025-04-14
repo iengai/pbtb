@@ -6,7 +6,7 @@ with open("config.json") as f:
     CONFIG_FILE = json.load(f)
 
 PB_DIR_PATH = CONFIG_FILE['pb_dir_path']
-PYTHON_VENV_PATH = CONFIG_FILE['python_venv_path']
+VENV_PYTHON = CONFIG_FILE['python_venv_path']
 USER_CONFIGS_DIR = CONFIG_FILE['user_configs_path']
 PREDEFINED_DIR = CONFIG_FILE['predefined_configs_path']
 SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')
@@ -14,7 +14,6 @@ SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')
 API_KEYS_FILE = os.path.join(PB_DIR_PATH, 'api-keys.json')
 
 MAIN_SCRIPT = 'main.py'
-VENV_PYTHON = os.path.join(os.getcwd(), "venv", "bin", "python")
 DB_PATH = 'sqlite'
 
 BOT_TOKEN = CONFIG_FILE['bot_token']
