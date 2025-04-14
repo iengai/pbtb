@@ -5,10 +5,10 @@ import shutil
 with open("config.json") as f:
     CONFIG_FILE = json.load(f)
 
-PB_DIR_PATH = CONFIG_FILE['pb_dir_path']
-VENV_PYTHON = CONFIG_FILE['python_venv_path']
-USER_CONFIGS_DIR = CONFIG_FILE['user_configs_path']
-PREDEFINED_DIR = CONFIG_FILE['predefined_configs_path']
+PB_DIR_PATH = CONFIG_FILE['passivbot_dir']
+VENV_PYTHON = CONFIG_FILE['env_python']
+USER_CONFIGS_DIR = CONFIG_FILE['user_configs_dir']
+PREDEFINED_DIR = CONFIG_FILE['predefined_configs_dir']
 SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')
 
 API_KEYS_FILE = os.path.join(PB_DIR_PATH, 'api-keys.json')
