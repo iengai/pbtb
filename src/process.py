@@ -4,16 +4,16 @@ import shutil
 import subprocess
 import signal
 from .db import add_bot as db_add_bot
-from .config import USER_CONFIGS_DIR, MAIN_SCRIPT, VENV_PYTHON, SILENT_CONFIG, get_api_key_file
+from .config import USER_CONFIGS_DIR, MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file
 
 def build_start_cmd(bot_id):
     config_path = os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
     log_file = f"{bot_id}.log"
-    return f"nohup {VENV_PYTHON} {MAIN_SCRIPT} {config_path} > {log_file} 2>&1 &"
+    return f"nohup {PB_VENV_PYTHON} {MAIN_SCRIPT} {config_path} > {log_file} 2>&1 &"
 
 def get_bot_pid_if_running(bot_id):
     config_path = os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
-    search_str = f"{VENV_PYTHON} {MAIN_SCRIPT} {config_path}"
+    search_str = f"{PB_VENV_PYTHON} {MAIN_SCRIPT} {config_path}"
     try:
         output = subprocess.check_output(["ps", "aux"], text=True)
         for line in output.splitlines():

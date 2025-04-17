@@ -6,7 +6,7 @@ with open("config.json") as f:
     CONFIG_FILE = json.load(f)
 
 PB_DIR_PATH = CONFIG_FILE['passivbot_dir']
-VENV_PYTHON = CONFIG_FILE['env_python']
+PB_VENV_PYTHON = CONFIG_FILE['passivbot_env_python']
 USER_CONFIGS_DIR = CONFIG_FILE['user_configs_dir']
 PREDEFINED_DIR = CONFIG_FILE['predefined_configs_dir']
 SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')

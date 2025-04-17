@@ -1,7 +1,7 @@
 {
   "bot_token": "123456789:ABCDefghIJKlmnoPQRstuVWxyz1234567890",
-  "allowed_user_ids": [123456789]，
-  "env_python": "/path/to/venv",
+  "allowed_user_ids": [123456789],
+  "passivbot_env_python": "/path/to/passivbot/venv/python",
   "passivbot_dir": "/passivbot/dir/path",
   "predefined_configs_dir": "/predefined/configs/path",
   "user_configs_dir": "/user/configs/path"
