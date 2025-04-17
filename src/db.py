@@ -7,8 +7,6 @@ def init_db():
             CREATE TABLE IF NOT EXISTS bots (
                 bot_id TEXT PRIMARY KEY,
                 user_id TEXT not null,
-                is_selected BOOLEAN DEFAULT FALSE,
-                config_path TEXT NOT NULL,
                 enabled BOOLEAN DEFAULT FALSE,
                 apikey TEXT NOT NULL,
                 secret TEXT NOT NULL
@@ -29,12 +27,12 @@ def list_all_bots(user_id):
     with sqlite3.connect(DB_PATH) as conn:
         return conn.execute('SELECT bot_id, is_selected FROM bots WHERE user_id', (user_id,)).fetchall()
 
-def add_bot(bot_id, user_id, apikey, secret, config_path):
+def add_bot(bot_id, user_id, apikey, secret):
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute('''
-            INSERT INTO bots (bot_id, user_id, config_path, is_selected, apikey, secret)
-            VALUES (?, ?, ?, 0, ?, ?)
+            INSERT INTO bots (bot_id, user_id, apikey, secret)
+            VALUES (?, ?, ?, ?)
             ON CONFLICT(bot_id) DO UPDATE SET
                 apikey = excluded.apikey,
                 secret = excluded.secret
-        ''', (bot_id, user_id, config_path, apikey, secret))
+        ''', (bot_id, user_id, apikey, secret))

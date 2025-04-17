@@ -4,7 +4,7 @@ from telegram.ext import (
     MessageHandler, ConversationHandler, ContextTypes, filters
 )
 from .config import BOT_TOKEN, ALLOWED_USER_IDS
-from .db import list_all_bots, set_selected_bot
+from .db import list_all_bots
 from .process import start_bot, stop_bot, get_bot_pid_if_running, add_bot
 from .pb_config import list_predefined, apply_pb_config
 import re
@@ -48,10 +48,13 @@ async def generate_panel_buttons():
     ])
 
 
-async def show_panel(query: CallbackQuery):
+async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
     """通过回调更新面板"""
     bots = list_all_bots(query.from_user.id)
-    selected = next((b for b, s in bots if s), None)
+    selected = context.user_data.get("selected_bot")
+
+    if selected not in bots:
+        selected = None
 
     status_msg = "🎛 当前选中 bot: 无\n状态: ⚠️ 未选中任何 bot\n" if not selected else \
         f"🎛 当前选中 bot: `{selected}`\n状态: {'🟢 运行中' if get_bot_pid_if_running(selected) else '🔴 已停止'}\n"
@@ -82,7 +85,7 @@ async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ===================== 机器人列表功能 =====================
-async def show_bot_list(query: CallbackQuery):
+async def show_bot_list(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
     """显示可选机器人列表"""
     bots = list_all_bots(query.from_user.id)
 
@@ -93,9 +96,10 @@ async def show_bot_list(query: CallbackQuery):
     # 生成机器人按钮（每行2个）
     bot_buttons = []
     row = []
-    for idx, (bot_id, is_selected) in enumerate(bots):
+
+    for idx, (bot_id) in enumerate(bots):
         btn = InlineKeyboardButton(
-            text=f"{'⭐' if is_selected else '○'} {bot_id}",
+            text=f"{'⭐' if context.user_data["selected_bot"] == bot_id else '○'} {bot_id}",
             callback_data=f"{SELECT_BOT}{bot_id}"
         )
         row.append(btn)
@@ -121,6 +125,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
+    bots = list_all_bots(query.from_user.id)
+    selected = context.user_data.get("selected_bot")
+    if len(bots) == 0:
+        selected = None
+    elif selected is None:
+        selected = bots[0]
 
     # 处理机器人列表
     if data == SHOW_BOT_LIST:
@@ -130,7 +140,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 处理机器人选择
     if data.startswith(SELECT_BOT):
         bot_id = data[len(SELECT_BOT):]
-        set_selected_bot(bot_id)
+        if bot_id not in bots:
+            raise Exception("invalid bot_id")
         context.user_data["selected_bot"] = bot_id
         await query.edit_message_text(
             f"✅ 已选择机器人：`{bot_id}`\n"
@@ -147,7 +158,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 处理模板配置
     if data.startswith("template::"):
         try:
-            bot_id = context.user_data.get("selected_bot")
+            bot_id = selected
             template_idx = int(data.split("::")[1])
 
             if not bot_id:
@@ -163,21 +174,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # 处理其他控制命令
-    bots = list_all_bots(query.from_user.id)
-    selected = next((b for b, s in bots if s), None)
 
     # 处理模板配置入口
     if data == "configure":
-        bots = list_all_bots(query.from_user.id)
-        selected_db = next((b for b, s in bots if s), None)
-        selected_ctx = context.user_data.get("selected_bot")
-
-        if selected_db:
-            context.user_data["selected_bot"] = selected_db
-            selected = selected_db
-        else:
-            selected = selected_ctx
-
         if not selected:
             await query.edit_message_text("❗️请先在列表中选择Bot")
             return
@@ -202,20 +201,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 处理模板应用
     if data.startswith("template::"):
         try:
-            bot_id = context.user_data.get("selected_bot")
-            if not bot_id:
-                bots = list_all_bots(query.from_user.id)
-                selected = next((b for b, s in bots if s), None)
-                if not selected:
-                    raise ValueError("请先在主面板选择Bot")
-                bot_id = selected
-                context.user_data["selected_bot"] = bot_id
+            if selected is None:
+                raise ValueError("请先在主面板选择Bot")
 
             template_idx = int(data.split("::")[1])
-            apply_pb_config(bot_id, template_idx)
+            apply_pb_config(selected, template_idx)
             await query.edit_message_text(
                 f"⚙️ 配置更新成功！\n"
-                f"• 机器人: `{bot_id}`\n"
+                f"• 机器人: `{selected}`\n"
                 f"• 已应用新模板\n"
                 f"• 服务已自动重启",
                 parse_mode="Markdown"

@@ -5,14 +5,15 @@ import subprocess
 import signal
 from .db import add_bot as db_add_bot
 from .config import USER_CONFIGS_DIR, MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file
+from .pb_config import get_pb_config
 
 def build_start_cmd(bot_id):
-    config_path = os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
+    config_path = get_pb_config(bot_id)
     log_file = f"{bot_id}.log"
     return f"nohup {PB_VENV_PYTHON} {MAIN_SCRIPT} {config_path} > {log_file} 2>&1 &"
 
 def get_bot_pid_if_running(bot_id):
-    config_path = os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
+    config_path = get_pb_config(bot_id)
     search_str = f"{PB_VENV_PYTHON} {MAIN_SCRIPT} {config_path}"
     try:
         output = subprocess.check_output(["ps", "aux"], text=True)
@@ -34,6 +35,10 @@ def stop_bot(bot_id):
         except ProcessLookupError:
             pass
 
+def restart_bot(bot_id):
+    stop_bot(bot_id)
+    start_bot(bot_id)
+
 def add_bot(bot_id, user_id, apikey, secret):
     apikey_file = get_api_key_file()
     with open(apikey_file, 'r') as f:
@@ -47,7 +52,7 @@ def add_bot(bot_id, user_id, apikey, secret):
     with open(apikey_file, 'w') as f:
         json.dump(api_data, f, indent=4)
 
-    bot_config = USER_CONFIGS_DIR + f"{bot_id}.json"
+    bot_config = get_pb_config(bot_id)
     if not os.path.exists(bot_config):
         shutil.copy(SILENT_CONFIG, bot_config)
-    db_add_bot(bot_id, user_id, bot_config, apikey, secret)
+    db_add_bot(bot_id, user_id, apikey, secret)

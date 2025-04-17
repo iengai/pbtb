@@ -18,7 +18,7 @@ def apply_pb_config(bot_id, pb_config):
         ('live', 'coin_flags'),
     ]
 
-    bot_config_path = os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
+    bot_config_path = get_pb_config(bot_id)
     with open(bot_config_path) as f:
         bot_config = json.load(f)
 
@@ -41,3 +41,6 @@ def apply_pb_config(bot_id, pb_config):
 
 def list_predefined():
     return [f for f in os.listdir(PREDEFINED_DIR) if f.endswith('.json')]
+
+def get_pb_config(bot_id):
+    return os.path.join(USER_CONFIGS_DIR, f"{bot_id}.json")
