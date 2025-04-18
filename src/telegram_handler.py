@@ -69,12 +69,7 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_panel_via_message(message: Message, update:Update, context: ContextTypes.DEFAULT_TYPE):
     """通过消息命令展示面板"""
-    bots = list_all_bots(update.effective_user.id)
-    selected = context.user_data.get("selected_bot")
-
-    if selected not in bots:
-        selected = None
-
+    selected = get_selected_bot_id(update, context)
     status_msg = "🤖 机器人控制中心" + "\n🎛 当前选中 bot: 无\n状态: ⚠️ 未选中任何 bot\n" if not selected else \
         f"🎛 当前选中 bot: `{selected}`\n状态: {'🟢 运行中' if get_bot_pid_if_running(selected) else '🔴 已停止'}\n"
 
@@ -238,13 +233,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 bot_config = json.load(f)
                 long_risk_level = bot_config["bot"]["long"]["total_wallet_exposure_limit"]
                 long_coins = bot_config["live"]["approved_coins"]["long"]
-                long_pb_cfg_flags = bot_config["live"]["coin_flags"]["long"] if "long" in bot_config["live"]["coin_flags"] else []
-
+                long_pb_cfg_flags = bot_config["live"]["coin_flags"]
             await query.edit_message_text(
-                f"📊 {selected} 状态：{status} \n**long**: {long_risk_level}\n" +
-                f"coins:".join(f", {item}" for item in long_coins) +
-                f"\n flags:".join(f", {item}" for item in long_pb_cfg_flags),
-                parse_mode="MarkdownV2"
+                f"📊 {selected} 状态：{status} \n **long configs**:\n"
+                    f"risk level: {long_risk_level}\n"
+                    f"coins: {str(long_coins)}\n"
+                    f"flags: {str(long_pb_cfg_flags)}",
+                parse_mode="Markdown"
             )
         elif data == "restart":
             stop_bot(selected)
@@ -351,6 +346,16 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def init_bots():
     for enabled_bot in list_all_enabled_bots():
         start_bot(enabled_bot[0])
+
+def get_selected_bot_id(update:Update, context: ContextTypes.DEFAULT_TYPE):
+    selected = context.user_data.get("selected_bot")
+    if selected is not None:
+        return selected
+    bots = [x[0] for x in list_all_bots(update.effective_user.id)]
+    if len(bots) == 0:
+        return None
+    context.user_data["selected_bot"] = bots[0]
+    return bots[0]
 
 # ===================== 应用启动 =====================
 def start_telegram_bot():
