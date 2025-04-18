@@ -1,3 +1,5 @@
+import json
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
@@ -6,7 +8,7 @@ from telegram.ext import (
 from .config import BOT_TOKEN, ALLOWED_USER_IDS
 from .db import list_all_bots, list_all_enabled_bots
 from .process import start_bot, stop_bot, get_bot_pid_if_running, add_bot
-from .pb_config import list_predefined, apply_pb_config
+from .pb_config import list_predefined, apply_pb_config, get_pb_config
 import re
 
 # 对话状态常量
@@ -56,7 +58,7 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
     if selected not in bots:
         selected = None
 
-    status_msg = "🎛 当前选中 bot: 无\n状态: ⚠️ 未选中任何 bot\n" if not selected else \
+    status_msg = "🤖 机器人控制中心" + "\n🎛 当前选中 bot: 无\n状态: ⚠️ 未选中任何 bot\n" if not selected else \
         f"🎛 当前选中 bot: `{selected}`\n状态: {'🟢 运行中' if get_bot_pid_if_running(selected) else '🔴 已停止'}\n"
 
     await query.edit_message_text(
@@ -65,23 +67,10 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=await generate_panel_buttons()
     )
 
-
-async def show_panel_via_message(message: Message):
-    """通过消息命令展示面板"""
-    await message.reply_text(
-        text="🤖 机器人控制中心",
-        parse_mode="Markdown",
-        reply_markup=await generate_panel_buttons()
-    )
-
-
 @restricted
 async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """面板命令入口"""
-    if update.message:
-        await show_panel_via_message(update.message)
-    elif update.callback_query:
-        await show_panel(update.callback_query, context)
+    await show_panel(update.callback_query, context)
 
 
 # ===================== 机器人列表功能 =====================
@@ -225,7 +214,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if data == "refresh":
             status = "🟢 运行中" if get_bot_pid_if_running(selected) else "🔴 已停止"
-            await query.edit_message_text(f"📊 {selected} 状态：{status}")
+            with open(get_pb_config(bot_id=selected), 'r') as f:
+                bot_config = json.load(f)
+                long_risk_level = bot_config["bot"]["long"]["total_wallet_exposure_limit"]
+                long_coins = bot_config["live"]["approved_coins"]["long"]
+                long_pb_cfg_flags = bot_config["live"]["coin_flags"]["long"] if "long" in bot_config["live"]["coin_flags"] else []
+
+            await query.edit_message_text(
+                f"📊 {selected} 状态：{status} \n**long**: {long_risk_level}\n" +
+                f"coins:".join(f", {item}" for item in long_coins) +
+                f"\n flags:".join(f", {item}" for item in long_pb_cfg_flags),
+                parse_mode="MarkdownV2"
+            )
         elif data == "restart":
             stop_bot(selected)
             start_bot(selected)
