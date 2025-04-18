@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import signal
 from .db import add_bot as db_add_bot
-from .config import PB_MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file
+from .config import PB_MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file, PB_DIR_PATH
 from .pb_config import get_pb_config
 
 def build_start_cmd(bot_id):
@@ -28,7 +28,7 @@ def start_bot(bot_id):
     pid = get_bot_pid_if_running(bot_id)
     if pid is not None:
         return
-    os.system(build_start_cmd(bot_id))
+    subprocess.run(build_start_cmd(bot_id), shell=True, check=True, preexec_fn=os.setsid,cwd=PB_DIR_PATH)
 
 def stop_bot(bot_id):
     pid = get_bot_pid_if_running(bot_id)
