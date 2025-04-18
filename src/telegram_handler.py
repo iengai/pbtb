@@ -142,8 +142,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith(SELECT_BOT):
 
         bot_id = data[len(SELECT_BOT):]
-        print(bot_id)
-        print(bots)
         if bot_id not in bots:
             raise Exception("invalid bot_id")
         context.user_data["selected_bot"] = bot_id
