@@ -99,7 +99,7 @@ async def show_bot_list(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE
 
     for idx, (bot_id) in enumerate(bots):
         btn = InlineKeyboardButton(
-            text=f"{'⭐' if context.user_data.get("selected_bot") == bot_id else '○'} {bot_id}",
+            text=f"{'⭐' if context.user_data.get('selected_bot') == bot_id else '○'} {bot_id}",
             callback_data=f"{SELECT_BOT}{bot_id}"
         )
         row.append(btn)
