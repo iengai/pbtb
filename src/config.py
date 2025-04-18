@@ -13,7 +13,7 @@ SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')
 
 API_KEYS_FILE = os.path.join(PB_DIR_PATH, 'api-keys.json')
 
-MAIN_SCRIPT = 'main.py'
+PB_MAIN_SCRIPT = os.path.join(PB_DIR_PATH, 'src/main.py')
 DB_PATH = 'sqlite'
 
 BOT_TOKEN = CONFIG_FILE['bot_token']
