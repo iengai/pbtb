@@ -4,7 +4,7 @@ from telegram.ext import (
     MessageHandler, ConversationHandler, ContextTypes, filters
 )
 from .config import BOT_TOKEN, ALLOWED_USER_IDS
-from .db import list_all_bots
+from .db import list_all_bots, list_all_enabled_bots
 from .process import start_bot, stop_bot, get_bot_pid_if_running, add_bot
 from .pb_config import list_predefined, apply_pb_config
 import re
@@ -325,6 +325,10 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(help_text)
 
+
+def init_bots():
+    for enabled_bot in list_all_enabled_bots():
+        start_bot(enabled_bot[0])
 
 # ===================== 应用启动 =====================
 def start_telegram_bot():

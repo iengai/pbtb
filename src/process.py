@@ -25,6 +25,9 @@ def get_bot_pid_if_running(bot_id):
         return None
 
 def start_bot(bot_id):
+    pid = get_bot_pid_if_running(bot_id)
+    if pid is not None:
+        return
     os.system(build_start_cmd(bot_id))
 
 def stop_bot(bot_id):

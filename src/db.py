@@ -22,11 +22,15 @@ def list_all_bots(user_id):
     with sqlite3.connect(DB_PATH) as conn:
         return conn.execute('SELECT bot_id FROM bots WHERE user_id=?', (user_id,)).fetchall()
 
+def list_all_enabled_bots():
+    with sqlite3.connect(DB_PATH) as conn:
+        return conn.execute('SELECT bot_id FROM bots WHERE enabled=1').fetchall()
+
 def add_bot(bot_id, user_id, apikey, secret):
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute('''
-            INSERT INTO bots (bot_id, user_id, apikey, secret)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO bots (bot_id, user_id, enabled, apikey, secret)
+            VALUES (?, ?, 0, ?, ?)
             ON CONFLICT(bot_id) DO UPDATE SET
                 apikey = excluded.apikey,
                 secret = excluded.secret
