@@ -9,7 +9,7 @@ from .pb_config import get_pb_config
 
 def build_start_cmd(bot_id):
     config_path = get_pb_config(bot_id)
-    log_file = f"{bot_id}.log"
+    log_file = os.path.join(PB_DIR_PATH, f"logs/{bot_id}.log")
     return f"nohup {PB_VENV_PYTHON} {PB_MAIN_SCRIPT} {config_path} > {log_file} 2>&1 &"
 
 def get_bot_pid_if_running(bot_id):
