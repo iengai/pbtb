@@ -67,10 +67,30 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=await generate_panel_buttons()
     )
 
+async def show_panel_via_message(message: Message,query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
+    """通过消息命令展示面板"""
+    bots = list_all_bots(query.from_user.id)
+    selected = context.user_data.get("selected_bot")
+
+    if selected not in bots:
+        selected = None
+
+    status_msg = "🤖 机器人控制中心" + "\n🎛 当前选中 bot: 无\n状态: ⚠️ 未选中任何 bot\n" if not selected else \
+        f"🎛 当前选中 bot: `{selected}`\n状态: {'🟢 运行中' if get_bot_pid_if_running(selected) else '🔴 已停止'}\n"
+
+    await message.reply_text(
+        text=status_msg,
+        parse_mode="Markdown",
+        reply_markup=await generate_panel_buttons()
+    )
+
 @restricted
 async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """面板命令入口"""
-    await show_panel(update.callback_query, context)
+    if update.message:
+        await show_panel_via_message(update.message, update.callback_query, context)
+    elif update.callback_query:
+        await show_panel(update.callback_query, context)
 
 
 # ===================== 机器人列表功能 =====================
