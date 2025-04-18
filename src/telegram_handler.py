@@ -81,7 +81,7 @@ async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message:
         await show_panel_via_message(update.message)
     elif update.callback_query:
-        await show_panel(update.callback_query)
+        await show_panel(update.callback_query, context)
 
 
 # ===================== 机器人列表功能 =====================
@@ -99,7 +99,7 @@ async def show_bot_list(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE
 
     for idx, (bot_id) in enumerate(bots):
         btn = InlineKeyboardButton(
-            text=f"{'⭐' if context.user_data["selected_bot"] == bot_id else '○'} {bot_id}",
+            text=f"{'⭐' if context.user_data.get("selected_bot") == bot_id else '○'} {bot_id}",
             callback_data=f"{SELECT_BOT}{bot_id}"
         )
         row.append(btn)
@@ -130,11 +130,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(bots) == 0:
         selected = None
     elif selected is None:
-        selected = bots[0]
+        selected = bots[0][0]
 
     # 处理机器人列表
     if data == SHOW_BOT_LIST:
-        await show_bot_list(query)
+        await show_bot_list(query, context)
         return
 
         # 处理机器人选择
@@ -152,21 +152,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 处理返回面板
     if data == BACK_TO_PANEL:
-        await show_panel(query)
+        await show_panel(query,context)
         return
 
     # 处理模板配置
     if data.startswith("template::"):
         try:
             bot_id = selected
-            template_idx = int(data.split("::")[1])
-
+            template_name = data.split("::")[1]
             if not bot_id:
                 raise ValueError("请先选择要配置的Bot")
 
-            apply_pb_config(bot_id, template_idx)
+            apply_pb_config(bot_id, template_name)
             await query.edit_message_text(
-                f"⚙️ 已为 `{bot_id}` 应用模板\n• 配置已更新\n• 已自动重启",
+                f"⚙️ 已为 `{bot_id}` 应用模板\n• 配置已更新\n• 需自动重启",
                 parse_mode="Markdown"
             )
         except Exception as e:
@@ -187,7 +186,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         template_buttons = [
-            [InlineKeyboardButton(f"📜 {name}", callback_data=f"template::{idx}")]
+            [InlineKeyboardButton(f"📜 {name}", callback_data=f"template::{name}")]
             for idx, name in enumerate(templates)
         ]
         template_buttons.append([InlineKeyboardButton("🔙 返回", callback_data=BACK_TO_PANEL)])

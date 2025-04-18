@@ -18,14 +18,9 @@ def bot_exists(bot_id):
         result = conn.execute('SELECT 1 FROM bots WHERE bot_id = ?', (bot_id,)).fetchone()
         return result is not None
 
-def set_selected_bot(bot_id):
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute('UPDATE bots SET is_selected=0')
-        conn.execute('UPDATE bots SET is_selected=1 WHERE bot_id=?', (bot_id,))
-
 def list_all_bots(user_id):
     with sqlite3.connect(DB_PATH) as conn:
-        return conn.execute('SELECT bot_id, is_selected FROM bots WHERE user_id', (user_id,)).fetchall()
+        return conn.execute('SELECT bot_id FROM bots WHERE user_id=?', (user_id,)).fetchall()
 
 def add_bot(bot_id, user_id, apikey, secret):
     with sqlite3.connect(DB_PATH) as conn:

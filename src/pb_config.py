@@ -1,7 +1,6 @@
 import os
 import json
 from .config import USER_CONFIGS_DIR, PREDEFINED_DIR
-from .process import stop_bot, start_bot
 
 def apply_pb_config(bot_id, pb_config):
     pb_config_path = os.path.join(PREDEFINED_DIR, pb_config)
@@ -34,10 +33,6 @@ def apply_pb_config(bot_id, pb_config):
 
     with open(bot_config_path, 'w') as f:
         json.dump(bot_config, f, indent=4)
-
-    # 可根据需要启用
-    # stop_bot(bot_id)
-    # start_bot(bot_id)
 
 def list_predefined():
     return [f for f in os.listdir(PREDEFINED_DIR) if f.endswith('.json')]

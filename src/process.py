@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import signal
 from .db import add_bot as db_add_bot
-from .config import USER_CONFIGS_DIR, MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file
+from .config import MAIN_SCRIPT, PB_VENV_PYTHON, SILENT_CONFIG, get_api_key_file
 from .pb_config import get_pb_config
 
 def build_start_cmd(bot_id):
