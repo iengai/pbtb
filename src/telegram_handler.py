@@ -98,8 +98,9 @@ async def show_bot_list(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE
     row = []
 
     for idx, (bot_id) in enumerate(bots):
+        pid = get_bot_pid_if_running(bot_id)
         btn = InlineKeyboardButton(
-            text=f"{'⭐' if context.user_data.get('selected_bot') == bot_id else '○'} {bot_id}",
+            text=f"{'⭐' if context.user_data.get('selected_bot') == bot_id else '○'} {bot_id} {'🟢' if pid is not None else '🔴'}",
             callback_data=f"{SELECT_BOT}{bot_id}"
         )
         row.append(btn)
