@@ -87,7 +87,7 @@ async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ===================== 机器人列表功能 =====================
 async def show_bot_list(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
     """显示可选机器人列表"""
-    bots = list_all_bots(query.from_user.id)
+    bots = [x[0] for x in list_all_bots(query.from_user.id)]
 
     if not bots:
         await query.edit_message_text("📭 当前没有可用机器人")
@@ -125,7 +125,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
-    bots = list_all_bots(query.from_user.id)
+    bots = [x[0] for x in list_all_bots(query.from_user.id)]
     selected = context.user_data.get("selected_bot")
     if len(bots) == 0:
         selected = None
@@ -139,7 +139,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # 处理机器人选择
     if data.startswith(SELECT_BOT):
+
         bot_id = data[len(SELECT_BOT):]
+        print(bot_id)
+        print(bots)
         if bot_id not in bots:
             raise Exception("invalid bot_id")
         context.user_data["selected_bot"] = bot_id
