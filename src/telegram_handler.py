@@ -67,9 +67,9 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=await generate_panel_buttons()
     )
 
-async def show_panel_via_message(message: Message,query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
+async def show_panel_via_message(message: Message, update:Update, context: ContextTypes.DEFAULT_TYPE):
     """通过消息命令展示面板"""
-    bots = list_all_bots(query.from_user.id)
+    bots = list_all_bots(update.effective_user.id)
     selected = context.user_data.get("selected_bot")
 
     if selected not in bots:
@@ -88,7 +88,7 @@ async def show_panel_via_message(message: Message,query: CallbackQuery, context:
 async def panel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """面板命令入口"""
     if update.message:
-        await show_panel_via_message(update.message, update.callback_query, context)
+        await show_panel_via_message(update.message, update, context)
     elif update.callback_query:
         await show_panel(update.callback_query, context)
 
