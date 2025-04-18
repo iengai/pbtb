@@ -2,6 +2,12 @@ import os
 import json
 from .config import USER_CONFIGS_DIR, PREDEFINED_DIR
 
+def init_pb_config():
+    if not os.path.exists(PREDEFINED_DIR):
+        os.makedirs(PREDEFINED_DIR)
+    if not os.path.exists(USER_CONFIGS_DIR):
+        os.makedirs(USER_CONFIGS_DIR)
+
 def apply_pb_config(bot_id, pb_config):
     pb_config_path = os.path.join(PREDEFINED_DIR, pb_config)
     if not os.path.isfile(pb_config_path):

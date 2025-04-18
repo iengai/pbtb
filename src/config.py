@@ -9,10 +9,8 @@ PB_DIR_PATH = CONFIG_FILE['passivbot_dir']
 PB_VENV_PYTHON = CONFIG_FILE['passivbot_env_python']
 USER_CONFIGS_DIR = CONFIG_FILE['user_configs_dir']
 PREDEFINED_DIR = CONFIG_FILE['predefined_configs_dir']
-SILENT_CONFIG = os.path.join(PREDEFINED_DIR, 'silent.json')
 
 API_KEYS_FILE = os.path.join(PB_DIR_PATH, 'api-keys.json')
-
 PB_MAIN_SCRIPT = os.path.join(PB_DIR_PATH, 'src/main.py')
 DB_PATH = 'sqlite'
 
@@ -21,5 +19,6 @@ ALLOWED_USER_IDS = CONFIG_FILE.get('allowed_user_ids', [CONFIG_FILE['allowed_use
 
 def get_api_key_file():
     if not os.path.exists(API_KEYS_FILE):
-        shutil.copy(API_KEYS_FILE + '.example', API_KEYS_FILE)
+        with open(API_KEYS_FILE, 'w') as f:
+            json.dump({}, f, indent=4)
     return API_KEYS_FILE
