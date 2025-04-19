@@ -63,7 +63,7 @@ async def show_panel(query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(
         text=status_msg,
-        parse_mode="Markdown",
+        parse_mode="MarkdownV2",
         reply_markup=await generate_panel_buttons()
     )
 
@@ -75,7 +75,7 @@ async def show_panel_via_message(message: Message, update:Update, context: Conte
 
     await message.reply_text(
         text=status_msg,
-        parse_mode="Markdown",
+        parse_mode="MarkdownV2",
         reply_markup=await generate_panel_buttons()
     )
 
@@ -152,7 +152,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             f"✅ 已选择机器人：`{bot_id}`\n"
             f"使用 /panel 返回控制面板",
-            parse_mode="Markdown"
+            parse_mode="MarkdownV2"
         )
         return
 
@@ -172,7 +172,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             apply_pb_config(bot_id, template_name)
             await query.edit_message_text(
                 f"⚙️ 已为 `{bot_id}` 应用模板\n• 配置已更新\n• 需自动重启",
-                parse_mode="Markdown"
+                parse_mode="MarkdownV2"
             )
         except Exception as e:
             await query.edit_message_text(f"❌ 操作失败：{str(e)}")
@@ -200,7 +200,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             f"🛠 为 `{selected}` 选择模板：",
             reply_markup=InlineKeyboardMarkup(template_buttons),
-            parse_mode="Markdown"
+            parse_mode="MarkdownV2"
         )
         return
     # 处理模板应用
@@ -216,7 +216,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"• 机器人: `{selected}`\n"
                 f"• 已应用新模板\n"
                 f"• 服务已自动重启",
-                parse_mode="Markdown"
+                parse_mode="MarkdownV2"
             )
         except Exception as e:
             await query.edit_message_text(f"❌ 操作失败：{str(e)}")
@@ -238,8 +238,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"📊 {selected} 状态：{status} \n **long configs**:\n"
                     f"risk level: {long_risk_level}\n"
                     f"coins: {str(long_coins)}\n"
-                    f"flags: {str(long_pb_cfg_flags)}",
-                parse_mode="Markdown"
+                    f"flags: {escape_markdown(long_pb_cfg_flags)}",
+                parse_mode="MarkdownV2"
             )
         elif data == "restart":
             stop_bot(selected)
@@ -249,7 +249,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stop_bot(selected)
             await query.edit_message_text(f"⏹️ 已停止 {selected}")
 
-
+def escape_markdown(text):
+    return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', str(text))
 # ===================== 添加Bot流程 =====================
 @restricted
 async def add_bot_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -298,7 +299,7 @@ async def add_bot_secret_step(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         await update.message.reply_text(
             f"✅ Bot `{user_data['bot_id']}` 添加成功！",
-            parse_mode="Markdown"
+            parse_mode="MarkdownV2"
         )
     except Exception as e:
         await update.message.reply_text(f"❌ 添加失败：{str(e)}")
