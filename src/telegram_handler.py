@@ -2,6 +2,7 @@ import json
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from telegram.ext import (
+    Application,
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ConversationHandler, ContextTypes, filters
 )
@@ -360,9 +361,20 @@ def get_selected_bot_id(update:Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["selected_bot"] = bots[0]
     return bots[0]
 
+async def post_init(application: Application) -> None:
+    """应用初始化完成后发送启动消息"""
+    for user_id in ALLOWED_USER_IDS:
+        try:
+            await application.bot.send_message(
+                chat_id=user_id,
+                text="🤖 机器人管理器已启动！"
+            )
+        except Exception as e:
+            print(f"无法发送启动消息到用户 {user_id}: {e}")
+
 # ===================== 应用启动 =====================
 def start_telegram_bot():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 
     # 添加Bot对话处理器
     app.add_handler(ConversationHandler(
