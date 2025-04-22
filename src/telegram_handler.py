@@ -6,7 +6,7 @@ from telegram.ext import (
     MessageHandler, ConversationHandler, ContextTypes, filters
 )
 from .config import BOT_TOKEN, ALLOWED_USER_IDS
-from .db import list_all_bots, list_all_enabled_bots
+from .db import list_all_bots, list_all_enabled_bots, set_enabled
 from .process import start_bot, stop_bot, get_bot_pid_if_running, add_bot
 from .pb_config import list_predefined, apply_pb_config, get_pb_config
 import re
@@ -244,9 +244,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif data == "restart":
             stop_bot(selected)
             start_bot(selected)
+            set_enabled(selected, 1)
             await query.edit_message_text(f"🔄 已重启 {selected}")
         elif data == "stop":
             stop_bot(selected)
+            set_enabled(selected, 0)
             await query.edit_message_text(f"⏹️ 已停止 {selected}")
 
 def escape_markdown(text):

@@ -35,3 +35,7 @@ def add_bot(bot_id, user_id, apikey, secret):
                 apikey = excluded.apikey,
                 secret = excluded.secret
         ''', (bot_id, user_id, apikey, secret))
+
+def set_enabled(bot_id, enabled):
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute('UPDATE bots SET enabled=? WHERE bot_id=?', (enabled, bot_id))
