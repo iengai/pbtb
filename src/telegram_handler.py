@@ -237,7 +237,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 long_pb_cfg_flags = bot_config["live"]["coin_flags"]
             await query.edit_message_text(
                 f"📊 {selected} 状态：{status} \n **long configs**:\n"
-                    f"risk level: {long_risk_level}\n"
+                    f"risk level: {escape_markdown(long_risk_level)}\n"
                     f"coins: {str(long_coins)}\n"
                     f"flags: {escape_markdown(long_pb_cfg_flags)}",
                 parse_mode="MarkdownV2"
