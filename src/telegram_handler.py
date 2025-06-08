@@ -238,7 +238,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 tn = bot_config['name']
             await query.edit_message_text(
                 f"📊 {selected} 状态：{status} \n"
-                    f"template name:{tn}\n"
+                    f"template name:{escape_markdown(tn)}\n"
                     f"**long configs**:\n"
                     f"risk level: {escape_markdown(long_risk_level)}\n"
                     f"coins: {str(long_coins)}\n"
