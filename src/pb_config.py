@@ -41,6 +41,42 @@ def apply_pb_config(bot_id, pb_config):
     with open(bot_config_path, 'w') as f:
         json.dump(bot_config, f, indent=4)
 
+# not tested
+def add_pb_config(bot_id, pb_config):
+    pb_config_path = os.path.join(PREDEFINED_DIR, pb_config)
+    if not os.path.isfile(pb_config_path):
+        raise FileNotFoundError(f"Config file '{pb_config}' does not exist in {PREDEFINED_DIR}")
+
+    with open(pb_config_path) as f:
+        template = json.load(f)
+
+    bot_config_path = get_pb_config(bot_id)
+    with open(bot_config_path) as f:
+        bot_config = json.load(f)
+
+    approved_coins_long = bot_config['live']['approved_coins']['long']
+    coin_to_add = template['live']['approved_coins']['long'][0]
+    if coin_to_add not in approved_coins_long:
+        approved_coins_long.append(coin_to_add)
+
+    bot_config['bot']['long']['n_positions'] = len(approved_coins_long)
+    bot_config['live']['coin_flags'][coin_to_add] = '-lm n -lc ' + pb_config
+
+    with open(bot_config_path, 'w') as f:
+        json.dump(bot_config, f, indent=4)
+
+# not tested
+def update_risk_level(bot_id, new_val):
+    bot_config_path = get_pb_config(bot_id)
+    with open(bot_config_path) as f:
+        bot_config = json.load(f)
+
+    bot_config['bot']['long']['total_wallet_exposure_limit'] = new_val
+    bot_config['live']['leverage'] = new_val
+
+    with open(bot_config_path, 'w') as f:
+        json.dump(bot_config, f, indent=4)
+
 def list_predefined():
     return [f for f in os.listdir(PREDEFINED_DIR) if f.endswith('.json')]
 
