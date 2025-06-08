@@ -35,6 +35,7 @@ def apply_pb_config(bot_id, pb_config):
             dst = dst.get(key, {})
         dst[path[-1]] = src.get(path[-1], dst.get(path[-1]))
 
+    bot_config["name"] = template["name"]
     bot_config['live']['user'] = bot_id
 
     with open(bot_config_path, 'w') as f:
