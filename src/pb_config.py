@@ -72,7 +72,7 @@ def update_risk_level(bot_id, new_val):
         bot_config = json.load(f)
 
     bot_config['bot']['long']['total_wallet_exposure_limit'] = new_val
-    bot_config['live']['leverage'] = new_val
+    bot_config['live']['leverage'] = round(new_val * 1.1, 1)
 
     with open(bot_config_path, 'w') as f:
         json.dump(bot_config, f, indent=4)

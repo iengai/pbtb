@@ -9,11 +9,11 @@ from telegram.ext import (
 from .config import BOT_TOKEN, ALLOWED_USER_IDS
 from .db import list_all_bots, list_all_enabled_bots, set_enabled
 from .process import start_bot, stop_bot, get_bot_pid_if_running, add_bot
-from .pb_config import list_predefined, apply_pb_config, get_pb_config
+from .pb_config import list_predefined, apply_pb_config, get_pb_config,update_risk_level
 import re
 
 # 对话状态常量
-ADD_BOT_ID, ADD_BOT_KEY, ADD_BOT_SECRET = range(3)
+ADD_BOT_ID, ADD_BOT_KEY, ADD_BOT_SECRET, CHANGE_RISK_LEVEL  = range(4)
 
 # 回调数据类型
 SHOW_BOT_LIST = "show_bot_list"
@@ -47,7 +47,8 @@ async def generate_panel_buttons():
         [InlineKeyboardButton("🔁 重启运行", callback_data="restart"),
          InlineKeyboardButton("🛑 停止运行", callback_data="stop")],
         [InlineKeyboardButton("🧩 配置模板", callback_data="configure"),
-         InlineKeyboardButton("➕ 添加Bot", callback_data="addbot")]
+         InlineKeyboardButton("➕ 添加Bot", callback_data="addbot")],
+        [InlineKeyboardButton("⚠️ 风险等级", callback_data="change_risk_level")]
     ])
 
 
@@ -257,6 +258,42 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def escape_markdown(text):
     return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', str(text))
+
+
+@restricted
+async def change_risk_level_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    selected = context.user_data.get("changing_risk_level_bot")
+    try:
+        new_val = float(update.message.text.strip())
+        update_risk_level(selected, new_val)
+        await update.message.reply_text(
+            f"✅ 风险等级已更新为 `{new_val}`，杠杆也已自动设置为 `{new_val * 1.1:.2f}`",
+            parse_mode="MarkdownV2"
+        )
+    except Exception as e:
+        await update.message.reply_text(f"❌ 修改失败：{str(e)}")
+
+    context.user_data.pop("changing_risk_level_bot", None)
+    return ConversationHandler.END
+
+
+@restricted
+async def change_risk_level_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    selected = context.user_data.get("selected_bot")
+    if not selected:
+        await query.edit_message_text("❗️请先在主面板选择Bot")
+        return ConversationHandler.END
+
+    context.user_data["changing_risk_level_bot"] = selected
+    await query.edit_message_text(
+        f"⚠️ 当前正在修改 `{selected}` 的风险等级\n请输入新的风险值（数字）:\n\n输入 /cancel 取消操作",
+        parse_mode="MarkdownV2"
+    )
+    return CHANGE_RISK_LEVEL
+
+
 # ===================== 添加Bot流程 =====================
 @restricted
 async def add_bot_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -386,6 +423,14 @@ def start_telegram_bot():
             ADD_BOT_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_bot_id_step)],
             ADD_BOT_KEY: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_bot_key_step)],
             ADD_BOT_SECRET: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_bot_secret_step)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel_cmd)],
+    ))
+
+    app.add_handler(ConversationHandler(
+        entry_points=[CallbackQueryHandler(change_risk_level_handler, pattern="^change_risk_level$")],
+        states={
+            CHANGE_RISK_LEVEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, change_risk_level_input)],
         },
         fallbacks=[CommandHandler("cancel", cancel_cmd)],
     ))
